@@ -65,6 +65,18 @@ class Mainstation(object):
         for i in range(len(self.substations)):
             return
 
+    # 定时生成一个广播信号数据根据数据类型
+    def broadcast(self):
+        # 周期性获取子站的申请信息
+        print("get substation csc burst")
+        # 生成广播数据，分配子站的载频和时隙
+        print("get broadcast info")
+
+    # 定义前向链路的回执
+    def reply_burst(self,burst):
+        # burst的类型，对应返回的数据
+        print("burst type and reply")
+
     # 定义一个画图函数，能够图示化每个用户的分配信息
     def draw_allocate(self):
         # 图中线的数量为用户个数，横坐标为时隙，纵坐标为频率
