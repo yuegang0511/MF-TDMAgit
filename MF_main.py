@@ -11,7 +11,7 @@ else:
 # 定义载频个数
 FREQUENCY_NUM = 8
 
-# 定义帧时长，时间为s
+# 定义帧时长，时间为s 128ms 27ms
 FLAME_TIME = 0.128
 
 # 定义帧中包含的时隙个数
@@ -35,6 +35,8 @@ SLOT_TIME = FLAME_TIME / SLOT_NUM
 
 # 每个时隙内传输的最大数据量
 Data_frequency = SLOT_TIME * FREQUENCY_WIDTH
+# print(Data_frequency/8)  一个时隙最大可传输31250bypes字节 当时隙28ms时，6800bytes
+
 
 # 定义每个时隙内原始数据量
 Data_source = SLOT_TIME * DATA_SPEED
