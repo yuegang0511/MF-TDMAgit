@@ -8,6 +8,7 @@ class Mainstation(object):
     # 传入一个子站个数ss_num，载频个数frq_num，时隙个数slot_num，根据生成子站计划，依次传入各个子站当中
     # 计算每个载频上时域的信号
     # 总的频域信息
+    # 主站主要完成用户资源的计算TBTP，先满足子站申请，分配，同步，回复的过程
     def __init__(self, ss_num, frq_num, slot_num):
         self.ss_num = ss_num
         self.frq_num = frq_num
@@ -103,6 +104,7 @@ class Mainstation(object):
         plt.title("substation f-s allocation")
         plt.show()
 
+    # 定义一个初始化TBTP的函数，其中
 
 # 定义一个fft变换，展示信号总的时域和频域的信息（这个函数规程成一个，为不同的类进行调用）
 

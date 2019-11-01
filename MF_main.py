@@ -9,13 +9,16 @@ else:
     BAND_WIDTH = 3 * 1000 * 1000 * 1000
 
 # 定义载频个数
-FREQUENCY_NUM = 8
+FREQUENCY_NUM = 1000
+
+# 定义每个载频的频带宽度为
+FREQUENCY_WIDTH = BAND_WIDTH / FREQUENCY_NUM
 
 # 定义帧时长，时间为s 128ms 27ms
-FLAME_TIME = 0.128
+FLAME_TIME = 0.0256
 
-# 定义帧中包含的时隙个数
-SLOT_NUM = 128
+# 定义帧中包含的时隙个数，时隙最大数为256 64个时隙则每个时隙0.4ms 0.0004s
+SLOT_NUM = 64
 
 # 定义链路层原始数据传输速率，单位为bit
 DATA_SPEED = 128
