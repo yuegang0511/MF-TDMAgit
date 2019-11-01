@@ -104,7 +104,8 @@ class Mainstation(object):
         plt.title("substation f-s allocation")
         plt.show()
 
-    # 定义一个初始化TBTP的函数，其中
+    # 定义一个初始化TBTP的函数，TBTP函数为一个1000 * 64 的矩阵，初始矩阵值为0 ，当有子站申请时，矩阵值为子站的id
+
 
 # 定义一个fft变换，展示信号总的时域和频域的信息（这个函数规程成一个，为不同的类进行调用）
 
