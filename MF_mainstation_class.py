@@ -109,5 +109,5 @@ class Mainstation(object):
 
 # 定义一个fft变换，展示信号总的时域和频域的信息（这个函数规程成一个，为不同的类进行调用）
 
-mainstation = Mainstation(5, 5, 10)
-mainstation.draw_allocate()
+# mainstation = Mainstation(5, 5, 10)
+# mainstation.draw_allocate()

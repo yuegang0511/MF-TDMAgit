@@ -1,3 +1,7 @@
+from MF_clock import *
+from MF_mainstation_class import *
+from MF_substation_class import *
+
 # 定义载波频段
 BAND_TYPE = "C"
 
@@ -46,3 +50,20 @@ Data_source = SLOT_TIME * DATA_SPEED
 
 # 计算每个原始数据最大采样数
 Sample_number = Data_frequency / Data_source
+
+
+# 开始计算每个时刻主站和子站的功能
+# 定义一个时钟实例用于同步
+clock = Clock()
+# 定义一个主站实例用于计算分配规则
+mainstation = Mainstation(5, 5, 10)
+mainstation.draw_allocate()
+while True:
+    # 定义子站变量，子站在对应的时间发送相关数据，子站为动态定义
+    # substation = Substation()
+    clock_count = clock.slot_count
+    clock.set_time()
+    if clock_count == clock.slot_count:
+        continue
+    else:
+        print(clock.message)
