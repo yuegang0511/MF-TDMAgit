@@ -19,7 +19,7 @@ class Substation(object):
     # 需要一个调制方式
     # 需要频分复用过程中的载频和时隙信息，数据格式为字典格式，键为时隙信息，值为频率信息，以一个帧为例
     # 输出时域和频域的结果
-    def __init__(self, fsinfo, layer_frame, id="aaaaaaaa"):
+    def __init__(self, fsinfo={}, layer_frame={}, id="aaaaaaaa"):
         self.frequency = []
         self.slot = []
         self.id = id
@@ -75,6 +75,17 @@ class Substation(object):
             # 进行数据调制
 
         # print(slot_datas)
+
+    # 定义子站的发送模块
+    def send_info(self, type):
+        if type == "CSC":
+            print(self.csc_info)
+        elif type == "ACQ":
+            print(self.acq)
+        elif type == "SYNC":
+            print(self.sync)
+        else:
+            print("error type")
 
 
 dict1 = {"12": "1", "22": "3"}

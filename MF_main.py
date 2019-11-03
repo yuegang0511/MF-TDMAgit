@@ -58,6 +58,11 @@ clock = Clock()
 # 定义一个主站实例用于计算分配规则
 mainstation = Mainstation(5, 5, 10)
 mainstation.draw_allocate()
+
+# 定义一个子站，并且将子站添加到主站管理列表当中
+id = str(random.randint(10000000, 99999999))
+substation = Substation(id=id)
+mainstation.substations.append(substation)
 while True:
     # 定义子站变量，子站在对应的时间发送相关数据，子站为动态定义
     # substation = Substation()
@@ -67,3 +72,23 @@ while True:
         continue
     else:
         print(clock.message)
+    if clock.message == "INIT":
+        # 子站发送csc信息
+        for i in range(len(mainstation.substations)):
+            # 判断子站是否分配频率和时隙，如果没有则进行资源分配，发送csc序列
+            if len(mainstation.substations[i].frequency) == 0:
+                mainstation.substations[i].send_info("CSC")
+        # 并且主站下发分配表
+        mainstation.broadcast()
+    elif clock.message == "ACQ":
+        # 子站发送acq信息，进行粗同步
+        for i in range(len(mainstation.substations)):
+            mainstation.substations[i].send_info("ACQ")
+    elif clock.message == "SYNC":
+        # 子站发送SYNC信息，进行细同步
+        for i in range(len(mainstation.substations)):
+            mainstation.substations[i].send_info("SYNC")
+    else:
+        # 子站从文件中读取 对应时隙 数据在对应的频率和时隙中发送内容数据
+        for i in range(len(mainstation.substations)):
+            mainstation.substations[i].source_data
