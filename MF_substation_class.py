@@ -48,7 +48,10 @@ class Substation(object):
         self.is_acq = False
         self.is_sync = False
         self.is_csc = False
-        self.frq_num = 4 * random.randint(1, 15)
+        self.frq_num = random.randint(1, 15)
+        self.speed = random.randint(64, 256) * 1000
+        self.slot_time = 0.0004
+        self.layer2 = Layer2(self.speed, self.slot_time, self.id, self.frq_num * 4)
 
     def csc_generate(self):
         plugin_data = random_generate(64)
@@ -90,7 +93,6 @@ class Substation(object):
             print(self.sync)
         else:
             print("error type")
-
 
 # dict1 = {"12": "1", "22": "3"}
 # layer_frame = {"speed": 128, "time": 1}

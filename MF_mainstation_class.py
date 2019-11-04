@@ -73,16 +73,32 @@ class Mainstation(object):
                         col = 0
                         if self.fs_infos[row][col] == 0 and self.fs_infos[row][col + 1] == 0:
                             self.fs_infos[row][col] = substation.id
+                            substation.frequency.append(row)
+                            substation.slot.append(col)
                             self.fs_infos[row][col + 1] = substation.id
+                            substation.frequency.append(row)
+                            substation.slot.append(col+1)
                             self.fs_infos[row][col + 2] = substation.id
+                            substation.frequency.append(row)
+                            substation.slot.append(col+2)
                             self.fs_infos[row][col + 3] = substation.id
+                            substation.frequency.append(row)
+                            substation.slot.append(col+3)
                             col += 4
                             break
                     elif self.fs_infos[row][col] == 0 and self.fs_infos[row][col + 1] == 0 and self.fs_infos[row][col + 2] == 0 and self.fs_infos[row][col + 3] == 0:
                         self.fs_infos[row][col] = substation.id
+                        substation.frequency.append(row)
+                        substation.slot.append(col)
                         self.fs_infos[row][col + 1] = substation.id
+                        substation.frequency.append(row)
+                        substation.slot.append(col+1)
                         self.fs_infos[row][col + 2] = substation.id
+                        substation.frequency.append(row)
+                        substation.slot.append(col+2)
                         self.fs_infos[row][col + 3] = substation.id
+                        substation.frequency.append(row)
+                        substation.slot.append(col+3)
                         col += 4
                         break
                     else:
@@ -183,5 +199,7 @@ substation1 = Substation(1)
 mainstation.substations.append(substation1)
 mainstation.tbtp_generate()
 print(mainstation.fs_infos)
+print(substation1.frequency)
+print(substation1.slot)
 # mainstation.allocate_fs_new()
 # mainstation.draw_allocate()

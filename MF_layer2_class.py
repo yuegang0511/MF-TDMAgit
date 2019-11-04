@@ -20,7 +20,7 @@ class Layer2(object):
 
     def source_data(self):
         # 计算需要产生多少个原始二进制数据
-        size = self.speed * self.time
+        size = int(self.speed * self.time)
         # 计算每个二进制数据时间间隔
         betimes = 1 / self.speed
         i = 0
