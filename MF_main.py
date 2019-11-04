@@ -56,8 +56,8 @@ Sample_number = Data_frequency / Data_source
 # 定义一个时钟实例用于同步
 clock = Clock()
 # 定义一个主站实例用于计算分配规则
-mainstation = Mainstation(5, 5, 10)
-mainstation.draw_allocate()
+mainstation = Mainstation(1000, 64)
+# mainstation.draw_allocate()
 
 # 定义一个子站，并且将子站添加到主站管理列表当中
 id = str(random.randint(10000000, 99999999))
@@ -79,7 +79,7 @@ while True:
             if len(mainstation.substations[i].frequency) == 0:
                 mainstation.substations[i].send_info("CSC")
         # 并且主站下发分配表
-        mainstation.broadcast()
+        mainstation.tbtp_generate()
     elif clock.message == "ACQ":
         # 子站发送acq信息，进行粗同步
         for i in range(len(mainstation.substations)):

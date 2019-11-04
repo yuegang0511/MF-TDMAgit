@@ -19,7 +19,7 @@ class Substation(object):
     # 需要一个调制方式
     # 需要频分复用过程中的载频和时隙信息，数据格式为字典格式，键为时隙信息，值为频率信息，以一个帧为例
     # 输出时域和频域的结果
-    def __init__(self, fsinfo={}, layer_frame={}, id="aaaaaaaa"):
+    def __init__(self, id="aaaaaaaa"):
         self.frequency = []
         self.slot = []
         self.id = id
@@ -35,16 +35,20 @@ class Substation(object):
         self.sync = ""
         self.pre_sync = random_generate(16)
         # 生成都对应id的数据文件
-        self.source_data = MF_layer2_class.Layer2(layer_frame["speed"], layer_frame["time"], self.id)
+        # self.source_data = MF_layer2_class.Layer2(layer_frame["speed"], layer_frame["time"], self.id)
         self.pre_data = random_generate(16)
         # 定义一个函数，对类中的变量进行赋值
-        for key, value in fsinfo.items():
-            self.frequency.append(value)
-            self.slot.append(key)
+        # for key, value in fsinfo.items():
+        #     self.frequency.append(value)
+        #     self.slot.append(key)
         # 初始化三类突发数据
         self.acq_generate(500)
         self.csc_generate()
         self.sync_generate()
+        self.is_acq = False
+        self.is_sync = False
+        self.is_csc = False
+        self.frq_num = 4 * random.randint(1, 15)
 
     def csc_generate(self):
         plugin_data = random_generate(64)
@@ -88,14 +92,14 @@ class Substation(object):
             print("error type")
 
 
-dict1 = {"12": "1", "22": "3"}
-layer_frame = {"speed": 128, "time": 1}
-substation = Substation(dict1, layer_frame)
-
-print(substation.mac)
-print(substation.csc_info)
-print(substation.sync)
-print(substation.acq)
+# dict1 = {"12": "1", "22": "3"}
+# layer_frame = {"speed": 128, "time": 1}
+# substation = Substation(dict1, layer_frame)
+#
+# print(substation.mac)
+# print(substation.csc_info)
+# print(substation.sync)
+# print(substation.acq)
 # substation.module_data()
 # print(substation.source_data.data)
 # print(substation.frequency)
