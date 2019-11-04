@@ -19,7 +19,7 @@ class Substation(object):
     # 需要一个调制方式
     # 需要频分复用过程中的载频和时隙信息，数据格式为字典格式，键为时隙信息，值为频率信息，以一个帧为例
     # 输出时域和频域的结果
-    def __init__(self, id="aaaaaaaa"):
+    def __init__(self, id="10000000"):
         self.frequency = []
         self.slot = []
         self.id = id

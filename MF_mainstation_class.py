@@ -192,14 +192,14 @@ class Mainstation(object):
 # 定义一个fft变换，展示信号总的时域和频域的信息（这个函数规程成一个，为不同的类进行调用）
 
 # substaton = Substation()
-mainstation = Mainstation(1000, 61)
-print(mainstation.fs_infos)
-
-substation1 = Substation(1)
-mainstation.substations.append(substation1)
-mainstation.tbtp_generate()
-print(mainstation.fs_infos)
-print(substation1.frequency)
-print(substation1.slot)
+# mainstation = Mainstation(1000, 61)
+# print(mainstation.fs_infos)
+#
+# substation1 = Substation(1)
+# mainstation.substations.append(substation1)
+# mainstation.tbtp_generate()
+# print(mainstation.fs_infos)
+# print(substation1.frequency)
+# print(substation1.slot)
 # mainstation.allocate_fs_new()
 # mainstation.draw_allocate()
