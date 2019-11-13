@@ -44,8 +44,8 @@ plt.plot(xf, fy1)
 
 # 解调过程(相干解调)
 for i in range(N):
-    i_demodule = y * np.cos(2*np.pi*f*x)
-    q_demodule = y * np.sin(2*np.pi*f*x)
+    i_demodule = np.sign(y * np.cos(2*np.pi*f*x))
+    q_demodule = np.sign(y * np.sin(2*np.pi*f*x))
 plt.subplot(422)
 plt.plot(x, i_demodule)
 plt.subplot(424)
