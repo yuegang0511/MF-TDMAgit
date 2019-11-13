@@ -1,82 +1,116 @@
-import math
-import numpy as np
-# -------------------------------------------------------------------------------------------
-import matplotlib
+import numpy
 import matplotlib.pyplot as plt
-from matplotlib.pylab import mpl
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk  # NavigationToolbar2TkAgg
-# ------------------------------------------------------------------------------------------
-import tkinter as tk
+from matplotlib.ticker import NullFormatter
+from scipy.special import erfc
+import sys
+import logging
 
-# def get_list(slot, frequency):
-#     n = []
-#     for i in range(slot):
-#         fre = []
-#         for j in range(frequency):
-#             fre.append(j)
-#         n.append(fre)
-#     return n
-#
-# a = get_list()
-# a[0]
-# print(get_list(3, 4))
+# logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
+# size of constellation (N symbols per frame; N frames per constellation)
+N = 64
+x = 2 * numpy.random.randint(0, 2, (N, N)) - 1  # real part of symbol matrix 's'
+y = 2 * numpy.random.randint(0, 2, (N, N)) - 1  # imaginary part of symbol matrix 's'
 
+s = x + 1j * y  # complex matrix (x+y) of QPSK symbols
+t, w = (numpy.empty((N, N), dtype=complex) for i in range(2))  # generate two empty, NxN arrays for use later
 
+# logging.debug('s=%s', s)
 
-# ------------------------------------------------------------------------------------------
+# definitions for the plot axes
+left, width = 0.1, 0.65
+bottom, height = 0.1, 0.65
+bottom_h = left_h = left + width + 0.02
 
+rect_scatter = [left, bottom, width, height]
+rect_histx = [left, bottom_h, width, 0.2]
+rect_histy = [left_h, bottom, 0.2, height]
 
-mpl.rcParams['font.sans-serif'] = ['SimHei']  # 中文显示
-mpl.rcParams['axes.unicode_minus'] = False  # 负号显示
+# start with a rectangular figure
+plt.figure(1, figsize=(8, 8))
 
+# set up plots
+axScatter = plt.axes(rect_scatter)
+axHistx = plt.axes(rect_histx)
+axHisty = plt.axes(rect_histy)
 
-class From:
-    def __init__(self):
-        self.root = tk.Tk()  # 创建主窗体
-        self.canvas = tk.Canvas()  # 创建一块显示图形的画布
-        self.figure = self.create_matplotlib()  # 返回matplotlib所画图形的figure对象
-        self.create_form(self.figure)  # 将figure显示在tkinter窗体上面
-        self.root.mainloop()
+# no axis labels for box plots
+axHistx.xaxis.set_major_formatter(NullFormatter())
+axHisty.yaxis.set_major_formatter(NullFormatter())
 
-    def create_matplotlib(self):
-        # 创建绘图对象f
-        f = plt.figure(num=2, figsize=(16, 12), dpi=80, facecolor="pink", edgecolor='green', frameon=True)
-        # 创建一副子图
-        fig1 = plt.subplot(1, 1, 1)
+# Generate SNR scale factor for AWGN generation:
+error_sum = 0.0  # initialize counter to zero to be used in BER calculation
 
-        x = np.arange(0, 2 * np.pi, 0.1)
-        y1 = np.sin(x)
-        y2 = np.cos(x)
+SNR_MIN = -10
+SNR_MAX = 10
+SNR = SNR_MAX  # desired SNR used to determine noise power
 
-        line1, = fig1.plot(x, y1, color='red', linewidth=3, linestyle='--')  # 画第一条线
-        line2, = fig1.plot(x, y2)
-        plt.setp(line2, color='black', linewidth=8, linestyle='-', alpha=0.3)  # 华第二条线
+Eb_No_lin = 10 ** (SNR / 10.0)  # convert SNR to decimal
 
-        fig1.set_title("这是第一幅图", loc='center', pad=20, fontsize='xx-large', color='red')  # 设置标题
-        line1.set_label("正弦曲线")  # 确定图例
-        fig1.legend(['正弦', '余弦'], loc='upper left', facecolor='green', frameon=True, shadow=True, framealpha=0.5,
-                    fontsize='xx-large')
+# logging.debug('Eb_No_lin=%s', Eb_No_lin)
 
-        fig1.set_xlabel('横坐标')  # 确定坐标轴标题
-        fig1.set_ylabel("纵坐标")
-        fig1.set_yticks([-1, -1 / 2, 0, 1 / 2, 1])  # 设置坐标轴刻度
-        fig1.grid(which='major', axis='x', color='r', linestyle='-', linewidth=2)  # 设置网格
+No = 1.0 / Eb_No_lin  # Linear power of the noise; average signal power = 1 (0dB)
+scale = numpy.sqrt(No / 2)  # variable to scale random noise values in AWGN loop
 
-        return f
+# logging.debug('No=%s', No)
+# logging.debug('scale=%s', scale)
 
-    def create_form(self, figure):
-        # 把绘制的图形显示到tkinter窗口上
-        self.canvas = FigureCanvasTkAgg(figure, self.root)
-        self.canvas.draw()  # 以前的版本使用show()方法，matplotlib 2.2之后不再推荐show（）用draw代替，但是用show不会报错，会显示警告
-        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+# loop through each frame, modulate, add gaussian noise (AWGN) then decode back in symbols
+for i in range(N):
+    n = numpy.fft.ifftn(
+        numpy.random.normal(scale=scale, size=N) + 1j * numpy.random.normal(scale=scale, size=N))  # array of noise
+    # n=0 # uncomment here and comment above if you want to remove all noise
+    # logging.debug('n[%s]=\n%s', i, n)
+    t[i] = numpy.fft.ifftn(s[i])
+    w[i] = numpy.fft.fftn(t[i] + n)  # add noise here
 
-        # 把matplotlib绘制图形的导航工具栏显示到tkinter窗口上
-        toolbar = NavigationToolbar2Tk(self.canvas,
-                                       self.root)  # matplotlib 2.2版本之后推荐使用NavigationToolbar2Tk，若使用NavigationToolbar2TkAgg会警告
-        toolbar.update()
-        self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+    # decode received signal + noise back into bins/symbols
+    z = numpy.sign(numpy.real(w[i])) + 1j * numpy.sign(numpy.imag(w[i]))
+    # logging.debug('z of loop %s=\n%s', i, z)
+    # logging.debug('z!=s[%s]=\n%s', i, z != s[i])
 
+    # find errors
+    err = numpy.where(z != s[i])
+    # logging.debug('err[%s]=\n%s', i, err)
 
-if __name__ == "__main__":
-    form = From()
+    # add up errors per frame
+    error_sum += float(len(err[0]))
+    # logging.debug('error_sum[%s]=\n%s', i, error_sum)
+
+# show total error for entire NxN message
+BER = error_sum / N ** 2
+# logging.debug('Final error_sum = %s out of a total possible %s symbols', error_sum, N ** 2)
+# logging.debug('Total BER=%s', BER)
+
+# scatter plot:
+axScatter.scatter(numpy.real(w), numpy.imag(w))
+
+# draw axes at origin
+axScatter.axhline(0, color='black')
+axScatter.axvline(0, color='black')
+
+# add title (at x-axis) to scatter plot
+# title = 'Zero noise'
+title = 'SNR = %sdB with a BER of %s' % (SNR, BER)
+axScatter.xaxis.set_label_text(title)
+
+# now determine nice limits by hand:
+binwidth = 0.25  # width of histrogram 'bins'
+xymax = numpy.max([numpy.max(numpy.fabs(numpy.real(w))),
+                   numpy.max(numpy.fabs(numpy.imag(w)))])  # find abs max symbol value; nominally 1
+print(xymax)
+lim = (int(xymax / binwidth) + 1) * binwidth  # create limit that is one 'binwidth' greater than 'xymax'
+print(lim)
+
+axScatter.set_xlim((-lim, lim))  # set the data limits for the xaxis -- autoscale
+axScatter.set_ylim((-lim, lim))  # set the data limits for the yaxis -- autoscale
+
+bins = numpy.arange(-lim, lim + binwidth, binwidth)  # create bins 'binwidth' apart between -lin and +lim -- autoscale
+print(bins)
+axHistx.hist(numpy.real(w), bins=bins)  # plot a histogram - xaxis are real values
+axHisty.hist(numpy.imag(w), bins=bins, orientation='horizontal')  # plot a histogram - yaxis are imaginary values
+
+axHistx.set_xlim(axScatter.get_xlim())  # set histogram axes to match scatter plot axes limits
+axHisty.set_ylim(axScatter.get_ylim())  # set histogram axes to match scatter plot axes limits
+
+plt.show()
