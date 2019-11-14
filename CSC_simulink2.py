@@ -23,6 +23,17 @@ zhfont1 = matplotlib.font_manager.FontProperties(fname='C:\Windows\Fonts\simsun.
 t = np.arange(0, size, sampling_t)
 
 
+def tto(I, Q):
+    data1 = []
+    data = []
+    for i in range(len(I)):
+        data.append(I[i])
+        data.append(Q[i])
+    for j in range(len(data)):
+        data1.append(int((data[j]+1)/2))
+    return data1
+
+
 def module_signal(signal):
     I = np.zeros(len(t), dtype=np.float32)
     Q = np.zeros(len(t), dtype=np.float32)
@@ -30,20 +41,20 @@ def module_signal(signal):
     for i in range(len(t)):
         I[i] = signal[0][math.floor(t[i])]
         Q[i] = signal[1][math.floor(t[i])]
-    fig = plt.figure()
-    ax1 = fig.add_subplot(4, 3, 1)
-    # 画出I路信号
-    ax1.set_title('I路信号', fontproperties=zhfont1, fontsize=15)
-    # 定义图的横纵坐标范围
-    plt.axis([0, size, -2, 2])
-    plt.plot(t, I, 'b')
-    # 画出Q路信号
-    ax2 = fig.add_subplot(4, 3, 4)
-    # 解决set_title中文乱码
-    ax2.set_title('Q路信号', fontproperties=zhfont1, fontsize=15)
-    # 定义图的横纵坐标范围
-    plt.axis([0, size, -2, 2])
-    plt.plot(t, Q, 'b')
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(4, 3, 1)
+    # # 画出I路信号
+    # ax1.set_title('I路信号', fontproperties=zhfont1, fontsize=15)
+    # # 定义图的横纵坐标范围
+    # plt.axis([0, size, -2, 2])
+    # plt.plot(t, I, 'b')
+    # # 画出Q路信号
+    # ax2 = fig.add_subplot(4, 3, 4)
+    # # 解决set_title中文乱码
+    # ax2.set_title('Q路信号', fontproperties=zhfont1, fontsize=15)
+    # # 定义图的横纵坐标范围
+    # plt.axis([0, size, -2, 2])
+    # plt.plot(t, Q, 'b')
     # # np.dot返回两个数组的点积，ts为一个数组，返回前一个数与后一个数组的积，为一个数组
     coherent_carrier = np.cos(np.dot(2 * pi * fc1, ts))
     coherent_carrier1 = np.sin(np.dot(2 * pi * fc1, ts))
@@ -51,10 +62,10 @@ def module_signal(signal):
     qpsk = I * coherent_carrier + Q * coherent_carrier1
     #
     # # BPSK调制信号波形
-    ax3 = fig.add_subplot(4, 3, 7)
-    ax3.set_title('QPSK调制信号', fontproperties=zhfont1, fontsize=15)
-    plt.axis([0, size, -2, 2])
-    plt.plot(t, qpsk, 'r')
+    # ax3 = fig.add_subplot(4, 3, 7)
+    # ax3.set_title('QPSK调制信号', fontproperties=zhfont1, fontsize=15)
+    # plt.axis([0, size, -2, 2])
+    # plt.plot(t, qpsk, 'r')
     return qpsk
 
 
@@ -71,7 +82,7 @@ def awgn(y, snr):
 
 
 def demodule_signal(signal1):
-    fig = plt.figure()
+    # fig = plt.figure()
     # 带通buffer滤波器设计，通带为[1500，2500]
     b, a = signal.butter(4, [1500 * 2 / fs, 2500 * 2 / fs], 'bandpass')
     # # 低通滤波器设计，通带截止频率为2000Hz，截至频率计算方法，截止数值 * 2 / 抽样点数
@@ -90,15 +101,15 @@ def demodule_signal(signal1):
     lowpass_outI = signal.filtfilt(bl, al, coherent_demodI)
     lowpass_outQ = signal.filtfilt(bl, al, coherent_demodQ)
 
-    bx1 = fig.add_subplot(4, 3, 8)
-    bx1.set_title('I路信号相干解调后的信号', fontproperties=zhfont1, fontsize=15)
-    plt.axis([0, size, -2, 2])
-    plt.plot(t, lowpass_outI, 'r')
-
-    bx2 = fig.add_subplot(4, 3, 11)
-    bx2.set_title('Q路信号相干解调后的信号', fontproperties=zhfont1, fontsize=15)
-    plt.axis([0, size, -2, 2])
-    plt.plot(t, lowpass_outQ, 'r')
+    # bx1 = fig.add_subplot(4, 3, 8)
+    # bx1.set_title('I路信号相干解调后的信号', fontproperties=zhfont1, fontsize=15)
+    # plt.axis([0, size, -2, 2])
+    # plt.plot(t, lowpass_outI, 'r')
+    #
+    # bx2 = fig.add_subplot(4, 3, 11)
+    # bx2.set_title('Q路信号相干解调后的信号', fontproperties=zhfont1, fontsize=15)
+    # plt.axis([0, size, -2, 2])
+    # plt.plot(t, lowpass_outQ, 'r')
 
     # 抽样判决
     # 抽样的数据为1000个，类型为float
@@ -118,7 +129,6 @@ def demodule_signal(signal1):
 
         flagI[i] = np.sign(tempI)
         flagQ[i] = np.sign(tempQ)
-    #
     # 将抽样数据规整，100个值要求一致
     for i in range(size):
         if flagI[i] == 1:
@@ -133,22 +143,75 @@ def demodule_signal(signal1):
         else:
             for j in range(100):
                 detection_Q[i * 100 + j] = -1
-    bx2 = fig.add_subplot(4, 3, 2)
-    bx2.set_title('I路抽样判决后的信号', fontproperties=zhfont1, fontsize=15)
-    plt.axis([0, size, -2, 2])
-    plt.plot(t, detection_I, 'r')
-    bx2 = fig.add_subplot(4, 3, 5)
-    bx2.set_title('Q路抽样判决后的信号', fontproperties=zhfont1, fontsize=15)
-    plt.axis([0, size, -2, 2])
-    plt.plot(t, detection_Q, 'r')
+    # bx2 = fig.add_subplot(4, 3, 2)
+    # bx2.set_title('I路抽样判决后的信号', fontproperties=zhfont1, fontsize=15)
+    # plt.axis([0, size, -2, 2])
+    # plt.plot(t, detection_I, 'r')
+    # bx2 = fig.add_subplot(4, 3, 5)
+    # bx2.set_title('Q路抽样判决后的信号', fontproperties=zhfont1, fontsize=15)
+    # plt.axis([0, size, -2, 2])
+    # plt.plot(t, detection_Q, 'r')
+    return tto(flagI, flagQ)
 
 
-b = 2 * np.random.randint(0, 2, (2, 24)) - 1
-a = 2 * np.random.randint(0, 2, (2, 24)) - 1
-qpskb = module_signal(b)
-qpska = module_signal(a)
-sum_qpsk = qpskb + qpska
-demodule_signal(qpska)
-demodule_signal(qpskb)
-demodule_signal(sum_qpsk)
+# 场景一，固定模式，所有时隙发送，一个malignant substation，5个normal substation
+m_signal = 2 * np.random.randint(0, 2, (2, 24)) - 1
+# print(len(m_signal[0]))
+m_s = tto(m_signal[0], m_signal[1])
+n_signal1 = 2 * np.random.randint(0, 2, (2, 24)) - 1
+n_s = tto(n_signal1[0], n_signal1[1])
+n_signal2 = 2 * np.random.randint(0, 2, (2, 24)) - 1
+n_s2 = tto(n_signal2[0], n_signal2[1])
+n_signal3 = 2 * np.random.randint(0, 2, (2, 24)) - 1
+n_s3 = tto(n_signal3[0], n_signal3[1])
+n_signal4 = 2 * np.random.randint(0, 2, (2, 24)) - 1
+n_s4 = tto(n_signal4[0], n_signal4[1])
+n_signal5 = 2 * np.random.randint(0, 2, (2, 24)) - 1
+n_s5 = tto(n_signal5[0], n_signal5[1])
+
+qpskm = module_signal(m_signal)
+qpskn1 = module_signal(n_signal1)
+qpskn2 = module_signal(n_signal2)
+qpskn3 = module_signal(n_signal3)
+qpskn4 = module_signal(n_signal4)
+qpskn5 = module_signal(n_signal5)
+
+sum_qpsk1 = qpskm + qpskn1
+sum_qpsk2 = qpskm + qpskn2
+sum_qpsk3 = qpskm + qpskn3
+sum_qpsk4 = qpskm + qpskn4
+sum_qpsk5 = qpskm + qpskn5
+
+
+d_s1 = demodule_signal(sum_qpsk1)
+d_s2 = demodule_signal(sum_qpsk2)
+d_s3 = demodule_signal(qpskn3)
+d_s4 = demodule_signal(sum_qpsk4)
+d_s5 = demodule_signal(qpskn5)
+
+plt.figure()
+x = np.arange(48)
+plt.subplot(621)
+plt.step(x, m_s)
+plt.subplot(623)
+plt.step(x, n_s)
+plt.subplot(624)
+plt.step(x, d_s1)
+plt.subplot(625)
+plt.step(x, n_s2)
+plt.subplot(626)
+plt.step(x, d_s2)
+plt.subplot(627)
+plt.step(x, n_s3)
+plt.subplot(628)
+plt.step(x, d_s3)
+plt.subplot(629)
+plt.step(x, n_s4)
+plt.subplot(6, 2, 10)
+plt.step(x, d_s4)
+plt.subplot(6, 2, 11)
+plt.step(x, n_s5)
+plt.subplot(6, 2, 12)
+plt.step(x, d_s5)
+
 plt.show()
