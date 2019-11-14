@@ -1,54 +1,154 @@
 import os
 import random
 import time
+from math import pi
+import matplotlib
 from matplotlib import pyplot as plt
 from scipy.fftpack import fft, ifft
 import numpy as np
+import math
+import scipy.signal as signal
 
-# 定义CSC比特流，在一个调度会话中，子站的前导序一致，对于恶意子站来说，
-# 发送多个接入干扰信号，所有时隙发送或选择发送，接入突发序列一致或不一
-# 致，共四种情况。
-
-# 一个crc接入请求共16bytes ，128bit数据其中，从4~9byte为mac地址
-# 定义恶意子站的mac地址，对应I和Q路的比特信息
-m_mac = 2 * np.random.randint(0, 2, (2, 24)) - 1
-print(m_mac)
-
-# 设载频为128hz 采样频率1024hz FFT变换区间N值为2048 取0~3s之间的数据 共3072个采样点
-f = 128
-N = 256
-# 调制过程
-x = np.linspace(0, 3, N)
-for i in range(N):
-    index = i // ((N // 24)+1)
-    y = m_mac[0][index] * np.cos(2*np.pi*f*x) + m_mac[1][index] * np.sin(2*np.pi*f*x)
-plt.subplot(421)
-x_signal = np.arange(24)
-plt.plot(x_signal, m_mac[0], drawstyle='steps-post')
-plt.subplot(423)
-plt.plot(x_signal, m_mac[1], drawstyle='steps-post')
-fy = fft(y)
-fy_abs = abs(fy)
-fy1 = fy_abs / len(x)
-xf = np.arange(len(y))
-plt.subplot(425)
-plt.plot(x, y)
-plt.subplot(427)
-plt.plot(xf, fy1)
-# s_mac = 2 * np.random.randint(0, 2, (2, 24)) - 1
-# print(s_mac)
-# for i in range(N):
-#     index = i // ((N // 24)+1)
-#     y1 = s_mac[0][index] * np.cos(2*np.pi*f*x) + s_mac[1][index] * np.sin(2*np.pi*f*x)
+size = 24
+sampling_t = 0.01
+# # 定义两个载频
+# 定义载波频率为1024hz
+fc1 = 2048
+# fc2 = 10000
+# # 定义采样频率，采样频率要大于信号带宽的两倍
+fs = 50000
+# # 100 为0.01相当于1个符号采样100个点
+ts = np.arange(0, (100 * size) / fs, 1 / fs)
+zhfont1 = matplotlib.font_manager.FontProperties(fname='C:\Windows\Fonts\simsun.ttc')
+t = np.arange(0, size, sampling_t)
 
 
-# 解调过程(相干解调)
-for i in range(N):
-    i_demodule = np.sign(y * np.cos(2*np.pi*f*x))
-    q_demodule = np.sign(y * np.sin(2*np.pi*f*x))
-plt.subplot(422)
-plt.plot(x, i_demodule)
-plt.subplot(424)
-plt.plot(x, q_demodule)
+def module_signal(signal):
+    I = np.zeros(len(t), dtype=np.float32)
+    Q = np.zeros(len(t), dtype=np.float32)
+    # 循环给m赋值
+    for i in range(len(t)):
+        I[i] = signal[0][math.floor(t[i])]
+        Q[i] = signal[1][math.floor(t[i])]
+    fig = plt.figure()
+    ax1 = fig.add_subplot(4, 3, 1)
+    # 画出I路信号
+    ax1.set_title('I路信号', fontproperties=zhfont1, fontsize=15)
+    # 定义图的横纵坐标范围
+    plt.axis([0, size, -2, 2])
+    plt.plot(t, I, 'b')
+    # 画出Q路信号
+    ax2 = fig.add_subplot(4, 3, 4)
+    # 解决set_title中文乱码
+    ax2.set_title('Q路信号', fontproperties=zhfont1, fontsize=15)
+    # 定义图的横纵坐标范围
+    plt.axis([0, size, -2, 2])
+    plt.plot(t, Q, 'b')
+    # # np.dot返回两个数组的点积，ts为一个数组，返回前一个数与后一个数组的积，为一个数组
+    coherent_carrier = np.cos(np.dot(2 * pi * fc1, ts))
+    coherent_carrier1 = np.sin(np.dot(2 * pi * fc1, ts))
+    # # 两个数组相乘，得到的也是一个数组，两个数组对应下标的乘积，同时两个数组的长度要一致
+    qpsk = I * coherent_carrier + Q * coherent_carrier1
+    #
+    # # BPSK调制信号波形
+    ax3 = fig.add_subplot(4, 3, 7)
+    ax3.set_title('QPSK调制信号', fontproperties=zhfont1, fontsize=15)
+    plt.axis([0, size, -2, 2])
+    plt.plot(t, qpsk, 'r')
+    return qpsk
 
+
+# 定义加性高斯白噪声 y为原始信号，snr为信噪比
+def awgn(y, snr):
+    # 根据db信噪比计算信号与造成的功率比
+    snr = 10 ** (snr / 10.0)
+    # 原始信号的的归一化功率 值的平方除以抽样点的数量
+    xpower = np.sum(y ** 2) / len(y)
+    # 噪声的平均功率
+    npower = xpower / snr
+    # randn为标准正态分布 ，在与原始噪声相加，加性噪声
+    return np.random.randn(len(y)) * np.sqrt(npower) + y
+
+
+def demodule_signal(signal1):
+    fig = plt.figure()
+    # 带通buffer滤波器设计，通带为[1500，2500]
+    b, a = signal.butter(4, [1500 * 2 / fs, 2500 * 2 / fs], 'bandpass')
+    # # 低通滤波器设计，通带截止频率为2000Hz，截至频率计算方法，截止数值 * 2 / 抽样点数
+    bl, al = signal.butter(4, 1500 * 2 / fs, 'lowpass')
+    #
+    # # 通过带通滤波器滤除带外噪声
+    bandpass_out1 = signal.filtfilt(b, a, signal1)
+    #
+    # # 相干解调,乘以同频同相的相干载波
+    coherent_carrier = np.cos(np.dot(2 * pi * fc1, ts))
+    coherent_carrier1 = np.sin(np.dot(2 * pi * fc1, ts))
+    coherent_demodI = bandpass_out1 * coherent_carrier
+    coherent_demodQ = bandpass_out1 * coherent_carrier1
+
+    # 通过低通滤波器
+    lowpass_outI = signal.filtfilt(bl, al, coherent_demodI)
+    lowpass_outQ = signal.filtfilt(bl, al, coherent_demodQ)
+
+    bx1 = fig.add_subplot(4, 3, 8)
+    bx1.set_title('I路信号相干解调后的信号', fontproperties=zhfont1, fontsize=15)
+    plt.axis([0, size, -2, 2])
+    plt.plot(t, lowpass_outI, 'r')
+
+    bx2 = fig.add_subplot(4, 3, 11)
+    bx2.set_title('Q路信号相干解调后的信号', fontproperties=zhfont1, fontsize=15)
+    plt.axis([0, size, -2, 2])
+    plt.plot(t, lowpass_outQ, 'r')
+
+    # 抽样判决
+    # 抽样的数据为1000个，类型为float
+    detection_I = np.zeros(len(t), dtype=np.float32)
+    detection_Q = np.zeros(len(t), dtype=np.float32)
+    # 译码的数据为10个，类型为float
+    flagI = np.zeros(size, dtype=np.float32)
+    flagQ = np.zeros(size, dtype=np.float32)
+
+    # 循环从1000个数据中取值，如果100此求和，如果最终的结果大于50，则为1
+    for i in range(size):
+        tempI = 0
+        tempQ = 0
+        for j in range(100):
+            tempI = tempI + lowpass_outI[i * 100 + j]
+            tempQ = tempQ + lowpass_outQ[i * 100 + j]
+
+        flagI[i] = np.sign(tempI)
+        flagQ[i] = np.sign(tempQ)
+    #
+    # 将抽样数据规整，100个值要求一致
+    for i in range(size):
+        if flagI[i] == 1:
+            for j in range(100):
+                detection_I[i * 100 + j] = 1
+        else:
+            for j in range(100):
+                detection_I[i * 100 + j] = -1
+        if flagQ[i] == 1:
+            for j in range(100):
+                detection_Q[i * 100 + j] = 1
+        else:
+            for j in range(100):
+                detection_Q[i * 100 + j] = -1
+    bx2 = fig.add_subplot(4, 3, 2)
+    bx2.set_title('I路抽样判决后的信号', fontproperties=zhfont1, fontsize=15)
+    plt.axis([0, size, -2, 2])
+    plt.plot(t, detection_I, 'r')
+    bx2 = fig.add_subplot(4, 3, 5)
+    bx2.set_title('Q路抽样判决后的信号', fontproperties=zhfont1, fontsize=15)
+    plt.axis([0, size, -2, 2])
+    plt.plot(t, detection_Q, 'r')
+
+
+b = 2 * np.random.randint(0, 2, (2, 24)) - 1
+a = 2 * np.random.randint(0, 2, (2, 24)) - 1
+qpskb = module_signal(b)
+qpska = module_signal(a)
+sum_qpsk = qpskb + qpska
+demodule_signal(qpska)
+demodule_signal(qpskb)
+demodule_signal(sum_qpsk)
 plt.show()

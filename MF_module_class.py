@@ -68,29 +68,29 @@ class Module(object):
             i += 1
 
     # 定义调制后的信号的快速傅里叶变换
-    def fft_function(self, x_data, y_data):
-        fy = fft(y_data)
-        fy_real = fy.real
-        fy_imag = fy.imag
-        fy_abs = abs(fy)
-        fy1 = fy_abs / len(x_data)
-        fy2 = fy1[range(int(len(x_data) / 2))]
-        xf = np.arange(len(y_data))
-        xf1 = xf
-        xf2 = xf[range(int(len(x_data) / 2))]
-        plt.subplot(221)
-        plt.plot(x_data[0:2000], y_data[0:2000])
-        plt.title("original wave")
-        plt.subplot(222)
-        plt.plot(xf, fy_abs, 'r')
-        plt.title("FFT of Mixed wave(two sides)")
-        plt.subplot(223)
-        plt.plot(xf1, fy1, 'g')
-        plt.title("FFT of Mixed wave(normalization)")
-        plt.subplot(224)
-        plt.plot(xf2, fy2, 'b')
-        plt.title("FFT of Mixed wave")
-        plt.show()
+        def fft_function(self, x_data, y_data):
+            fy = fft(y_data)
+            fy_real = fy.real
+            fy_imag = fy.imag
+            fy_abs = abs(fy)
+            fy1 = fy_abs / len(x_data)
+            fy2 = fy1[range(int(len(x_data) / 2))]
+            xf = np.arange(len(y_data))
+            xf1 = xf
+            xf2 = xf[range(int(len(x_data) / 2))]
+            plt.subplot(221)
+            plt.plot(x_data[0:2000], y_data[0:2000])
+            plt.title("original wave")
+            plt.subplot(222)
+            plt.plot(xf, fy_abs, 'r')
+            plt.title("FFT of Mixed wave(two sides)")
+            plt.subplot(223)
+            plt.plot(xf1, fy1, 'g')
+            plt.title("FFT of Mixed wave(normalization)")
+            plt.subplot(224)
+            plt.plot(xf2, fy2, 'b')
+            plt.title("FFT of Mixed wave")
+            plt.show()
 
 
 # layer2 = MF_layer2_class.Layer2(speed=128, time=1)
