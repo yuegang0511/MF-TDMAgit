@@ -154,7 +154,7 @@ def demodule_signal(signal1):
     return tto(flagI, flagQ)
 
 
-# 场景一，固定模式，所有时隙发送，一个malignant substation，5个normal substation
+# 场景一，固定模式，所有时隙发送，一个malignant substation，5个normal substation，分为全干扰和部分干扰
 m_signal = 2 * np.random.randint(0, 2, (2, 24)) - 1
 # print(len(m_signal[0]))
 m_s = tto(m_signal[0], m_signal[1])
@@ -169,7 +169,38 @@ n_s4 = tto(n_signal4[0], n_signal4[1])
 n_signal5 = 2 * np.random.randint(0, 2, (2, 24)) - 1
 n_s5 = tto(n_signal5[0], n_signal5[1])
 
+# 场景二，干扰序列不固定，有特征，特殊字段固定，其余字段不固定，分为全干扰和部分干扰
+m_signal1 = 2 * np.random.randint(0, 2, (2, 24)) - 1
+m_signal2 = 2 * np.random.randint(0, 2, (2, 24)) - 1
+m_signal3 = 2 * np.random.randint(0, 2, (2, 24)) - 1
+m_signal4 = 2 * np.random.randint(0, 2, (2, 24)) - 1
+
+# 每一个恶意信号将10个bit值固定
+RN = 12
+index = np.random.randint(0, 24, RN)
+I_fix_signal = np.random.randint(0, 2, RN) * 2 - 1
+Q_fix_signal = np.random.randint(0, 2, RN) * 2 - 1
+print(index)
+
+for i in range(RN):
+    m_signal[0][index[i]] = I_fix_signal[i]
+    m_signal[1][index[i]] = Q_fix_signal[i]
+    m_signal1[0][index[i]] = I_fix_signal[i]
+    m_signal1[1][index[i]] = Q_fix_signal[i]
+    m_signal2[0][index[i]] = I_fix_signal[i]
+    m_signal2[1][index[i]] = Q_fix_signal[i]
+    m_signal3[0][index[i]] = I_fix_signal[i]
+    m_signal3[1][index[i]] = Q_fix_signal[i]
+    m_signal4[0][index[i]] = I_fix_signal[i]
+    m_signal4[1][index[i]] = Q_fix_signal[i]
+
+
+
 qpskm = module_signal(m_signal)
+qpskm1 = module_signal(m_signal1)
+qpskm2 = module_signal(m_signal2)
+qpskm3 = module_signal(m_signal3)
+qpskm4 = module_signal(m_signal4)
 qpskn1 = module_signal(n_signal1)
 qpskn2 = module_signal(n_signal2)
 qpskn3 = module_signal(n_signal3)
@@ -177,41 +208,76 @@ qpskn4 = module_signal(n_signal4)
 qpskn5 = module_signal(n_signal5)
 
 sum_qpsk1 = qpskm + qpskn1
-sum_qpsk2 = qpskm + qpskn2
-sum_qpsk3 = qpskm + qpskn3
-sum_qpsk4 = qpskm + qpskn4
-sum_qpsk5 = qpskm + qpskn5
+sum_qpsk2 = qpskn2
+sum_qpsk3 = qpskm2 + qpskn3
+sum_qpsk4 = qpskn4
+sum_qpsk5 = qpskm4 + qpskn5
 
 
 d_s1 = demodule_signal(sum_qpsk1)
 d_s2 = demodule_signal(sum_qpsk2)
-d_s3 = demodule_signal(qpskn3)
+d_s3 = demodule_signal(sum_qpsk3)
 d_s4 = demodule_signal(sum_qpsk4)
-d_s5 = demodule_signal(qpskn5)
+d_s5 = demodule_signal(sum_qpsk5)
 
-plt.figure()
+# 场景二图示
 x = np.arange(48)
-plt.subplot(621)
-plt.step(x, m_s)
-plt.subplot(623)
+plt.figure()
+plt.subplot(531)
+plt.step(x, tto(m_signal[0], m_signal[1]))
+plt.subplot(534)
+# plt.step(x, tto(m_signal1[0], m_signal1[1]))
+plt.subplot(537)
+plt.step(x, tto(m_signal2[0], m_signal2[1]))
+plt.subplot(5, 3, 10)
+# plt.step(x, tto(m_signal3[0], m_signal3[1]))
+plt.subplot(5, 3, 13)
+plt.step(x, tto(m_signal4[0], m_signal4[1]))
+plt.subplot(532)
 plt.step(x, n_s)
-plt.subplot(624)
-plt.step(x, d_s1)
-plt.subplot(625)
+plt.subplot(535)
 plt.step(x, n_s2)
-plt.subplot(626)
-plt.step(x, d_s2)
-plt.subplot(627)
+plt.subplot(538)
 plt.step(x, n_s3)
-plt.subplot(628)
-plt.step(x, d_s3)
-plt.subplot(629)
+plt.subplot(5, 3, 11)
 plt.step(x, n_s4)
-plt.subplot(6, 2, 10)
-plt.step(x, d_s4)
-plt.subplot(6, 2, 11)
+plt.subplot(5, 3, 14)
 plt.step(x, n_s5)
-plt.subplot(6, 2, 12)
+plt.subplot(533)
+plt.step(x, d_s1)
+plt.subplot(536)
+plt.step(x, d_s2)
+plt.subplot(539)
+plt.step(x, d_s3)
+plt.subplot(5, 3, 12)
+plt.step(x, d_s4)
+plt.subplot(5, 3, 15)
 plt.step(x, d_s5)
+
+# 场景一图示
+# plt.figure()
+# # x = np.arange(48)
+# plt.subplot(621)
+# # plt.step(x, m_s)
+# plt.subplot(623)
+# plt.step(x, n_s)
+# plt.subplot(624)
+# plt.step(x, d_s1)
+# plt.subplot(625)
+# plt.step(x, n_s2)
+# plt.subplot(626)
+# plt.step(x, d_s2)
+# plt.subplot(627)
+# plt.step(x, n_s3)
+# plt.subplot(628)
+# plt.step(x, d_s3)
+# plt.subplot(629)
+# plt.step(x, n_s4)
+# plt.subplot(6, 2, 10)
+# plt.step(x, d_s4)
+# plt.subplot(6, 2, 11)
+# plt.step(x, n_s5)
+# plt.subplot(6, 2, 12)
+# plt.step(x, d_s5)
 
 plt.show()
